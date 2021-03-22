@@ -12,7 +12,8 @@ type Pair struct {
 }
 
 func main() {
-	a := MakeRange(-423455, 500000)
+	//a := MakeRange(-423455, 500000)
+	a := []int{-5, -4, 5, 1, 100, 1000}
 
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
@@ -39,7 +40,7 @@ func FindPairs(nums []int) {
 
 	for i := 0; i < len(sortedNumbers); i++ {
 		if sortedNumbers[i] < 0 {
-			if sortedNumbers[i] + (-sortedNumbers[i]) == 0 {
+			if BinarySearch(-sortedNumbers[i], sortedNumbers) {
 				var pair Pair
 				pair.valPos = sortedNumbers[i]
 				pair.valNeg = -sortedNumbers[i]
@@ -79,4 +80,26 @@ func MergeSort(elements []int) []int {
 		}
 	}
 	return slice
+}
+
+func BinarySearch(needle int, haystack []int) bool {
+
+	low := 0
+	high := len(haystack) - 1
+
+	for low <= high {
+		median := (low + high) / 2
+
+		if haystack[median] < needle {
+			low = median + 1
+		} else {
+			high = median - 1
+		}
+	}
+
+	if low == len(haystack) || haystack[low] != needle {
+		return false
+	}
+
+	return true
 }
