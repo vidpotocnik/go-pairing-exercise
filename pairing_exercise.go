@@ -3,103 +3,99 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 	"time"
 )
 
 type Pair struct {
-	valPos int
-	valNeg int
+	firstVal  int
+	secondVal int
 }
 
 func main() {
-	//a := MakeRange(-423455, 500000)
-	a := []int{-5, -4, 5, 1, 100, 1000}
+	a := []int{-1, 1, -2, 2, -3, 3, -4, -5, -25, 50, 252, 12412, 235235, 35235, -12412}
 
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 
 	fmt.Printf("Testing range of %d numbers \n", len(a))
 
+	pos, neg := DivideNumbers(a)
+
 	start := time.Now()
-	FindPairs(a)
+	FindPairs(pos, neg)
 	duration := time.Since(start)
 	fmt.Println("Time lapsed: ", duration)
 }
 
-func MakeRange(min, max int) []int {
-	a := make([]int, max-min+1)
-	for i := range a {
-		a[i] = min + i
+func DivideNumbers(nums []int) (pos []int, neg []int) {
+	var negNums []int
+	var posNums []int
+	for _, v := range nums {
+		if v < 0 {
+			negNums = append(negNums, v)
+		} else {
+			posNums = append(posNums, v)
+		}
 	}
-	return a
+
+	return posNums, negNums
 }
 
-func FindPairs(nums []int) {
-	sortedNumbers := MergeSort(nums)
+func FindPairs(pos []int, neg []int) {
+
+	sort.Ints(pos)
+	sort.Ints(neg)
+
 	var pairs []Pair
 
-	for i := 0; i < len(sortedNumbers); i++ {
-		if sortedNumbers[i] < 0 {
-			if BinarySearch(-sortedNumbers[i], sortedNumbers) {
-				var pair Pair
-				pair.valPos = sortedNumbers[i]
-				pair.valNeg = -sortedNumbers[i]
+	if len(neg) > len(pos) {
+		for _, val := range pos {
+			var pair Pair
+			if BinarySearch(neg, -val) != -1 {
+				pair.firstVal = val
+				pair.secondVal = -val
+				pairs = append(pairs, pair)
+			}
+
+		}
+	}
+
+	if len(pos) > len(neg) {
+		for _, val := range neg {
+			var pair Pair
+			if BinarySearch(pos, -val) != -1 {
+				pair.firstVal = val
+				pair.secondVal = -val
 				pairs = append(pairs, pair)
 			}
 		}
 	}
-	fmt.Printf("There were found %d pairs. \n", len(pairs))
+
+	fmt.Printf("There were found %d pairs. Pairs: %d \n", len(pairs), pairs)
 }
 
-func MergeSort(elements []int) []int {
-	if len(elements) < 2 {
-		return elements
-	}
+func BinarySearch(array []int, target int) int {
+	startIndex := 0
+	endIndex := len(array) - 1
+	midIndex := len(array) / 2
+	for startIndex <= endIndex {
 
-	mid := len(elements) / 2
-	left := elements[:mid]
-	right := elements[mid:]
+		value := array[midIndex]
 
-	size, i, j := len(left)+len(right), 0, 0
-
-	slice := make([]int, size, size)
-
-	for el := 0; el < size; el++ {
-		if i > len(left)-1 && j <= len(right)-1 {
-			slice[el] = right[j]
-			j++
-		} else if j > len(right)-1 && i <= len(left)-1 {
-			slice[el] = left[i]
-			i++
-		} else if left[i] < right[j] {
-			slice[el] = left[i]
-			i++
-		} else {
-			slice[el] = right[j]
-			j++
+		if value == target {
+			return midIndex
 		}
-	}
-	return slice
-}
 
-func BinarySearch(needle int, haystack []int) bool {
-
-	low := 0
-	high := len(haystack) - 1
-
-	for low <= high {
-		median := (low + high) / 2
-
-		if haystack[median] < needle {
-			low = median + 1
-		} else {
-			high = median - 1
+		if value > target {
+			endIndex = midIndex - 1
+			midIndex = (startIndex + endIndex) / 2
+			continue
 		}
+
+		startIndex = midIndex + 1
+		midIndex = (startIndex + endIndex) / 2
 	}
 
-	if low == len(haystack) || haystack[low] != needle {
-		return false
-	}
-
-	return true
+	return -1
 }
